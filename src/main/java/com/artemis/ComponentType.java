@@ -26,39 +26,39 @@ package com.artemis;
 import java.util.HashMap;
 
 public class ComponentType {
-	private static int INDEX = 0;
+    private static int INDEX = 0;
 
-	private final int index;
-	private final Class<? extends Component> type;
+    private final int index;
+    private final Class<? extends Component> type;
 
-	private ComponentType(Class<? extends Component> type) {
-		index = INDEX++;
-		this.type = type;
-	}
+    private ComponentType(Class<? extends Component> type) {
+        index = INDEX++;
+        this.type = type;
+    }
 
-	public int getIndex() {
-		return index;
-	}
-	
-	@Override
-	public String toString() {
-		return "ComponentType["+type.getSimpleName()+"] ("+index+")";
-	}
+    public int getIndex() {
+        return index;
+    }
 
-	private static HashMap<Class<? extends Component>, ComponentType> componentTypes = new HashMap<Class<? extends Component>, ComponentType>();
+    @Override
+    public String toString() {
+        return "ComponentType[" + type.getSimpleName() + "] (" + index + ")";
+    }
 
-	public static ComponentType getTypeFor(Class<? extends Component> c) {
-		ComponentType type = componentTypes.get(c);
+    private static HashMap<Class<? extends Component>, ComponentType> componentTypes = new HashMap<Class<? extends Component>, ComponentType>();
 
-		if (type == null) {
-			type = new ComponentType(c);
-			componentTypes.put(c, type);
-		}
+    public static ComponentType getTypeFor(Class<? extends Component> c) {
+        ComponentType type = componentTypes.get(c);
 
-		return type;
-	}
+        if (type == null) {
+            type = new ComponentType(c);
+            componentTypes.put(c, type);
+        }
 
-	public static int getIndexFor(Class<? extends Component> c) {
-		return getTypeFor(c).getIndex();
-	}
+        return type;
+    }
+
+    public static int getIndexFor(Class<? extends Component> c) {
+        return getTypeFor(c).getIndex();
+    }
 }

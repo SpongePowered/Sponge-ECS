@@ -23,12 +23,19 @@
  */
 package com.artemis.utils;
 
+import javax.annotation.Nullable;
+import java.util.Arrays;
+
 /**
  * Collection type a bit like ArrayList but does not preserve the order of its
  * entities, speedwise it is very good, especially suited for games.
+ * <p/>
+ * For speed this only check for identical objects and it does not invoke {@link java.lang.Object#equals(Object)}.
  */
 
 public class Bag<E> implements ImmutableBag<E> {
+    static final int DEFAULT_CAPACITY = 64;
+
     private E[] data;
     private int size = 0;
 
@@ -36,7 +43,7 @@ public class Bag<E> implements ImmutableBag<E> {
      * Constructs an empty Bag with an initial capacity of 64.
      */
     public Bag() {
-        this(64);
+        this(DEFAULT_CAPACITY);
     }
 
     /**
@@ -68,6 +75,7 @@ public class Bag<E> implements ImmutableBag<E> {
      *
      * @return the last object in the bag, null if empty.
      */
+    @Nullable
     public E removeLast() {
         if (size > 0) {
             E e = data[--size];
@@ -103,11 +111,12 @@ public class Bag<E> implements ImmutableBag<E> {
     /**
      * Check if bag contains this element.
      *
-     * @param e
+     * @param e The element
      * @return
      */
+    @Override
     public boolean contains(E e) {
-        for (int i = 0; size > i; i++) {
+        for (int i = 0; i < size; i++) {
             if (e == data[i]) {
                 return true;
             }
@@ -117,14 +126,17 @@ public class Bag<E> implements ImmutableBag<E> {
 
     /**
      * Removes from this Bag all of its elements that are contained in the
-     * specified Bag.
+     * specified other Bag.
      *
-     * @param bag Bag containing elements to be removed from this Bag
+     * @param bag other bag containing elements to be removed from this Bag
      * @return {@code true} if this Bag changed as a result of the call
      */
     public boolean removeAll(ImmutableBag<E> bag) {
-        boolean modified = false;
+        if (bag == this) {
+            throw new IllegalArgumentException("addAll doesn't support from itself to itself");
+        }
 
+        boolean modified = false;
         for (int i = 0; i < bag.size(); i++) {
             E e1 = bag.get(i);
 
@@ -149,6 +161,7 @@ public class Bag<E> implements ImmutableBag<E> {
      * @param index index of the element to return
      * @return the element at the specified position in bag
      */
+    @Override
     public E get(int index) {
         return data[index];
     }
@@ -158,6 +171,7 @@ public class Bag<E> implements ImmutableBag<E> {
      *
      * @return the number of elements in this bag
      */
+    @Override
     public int size() {
         return size;
     }
@@ -178,7 +192,7 @@ public class Bag<E> implements ImmutableBag<E> {
      * @return
      */
     public boolean isIndexWithinBounds(int index) {
-        return index < getCapacity();
+        return index >= 0 && index < getCapacity();
     }
 
     /**
@@ -186,6 +200,7 @@ public class Bag<E> implements ImmutableBag<E> {
      *
      * @return true if this list contains no elements
      */
+    @Override
     public boolean isEmpty() {
         return size == 0;
     }
@@ -199,7 +214,7 @@ public class Bag<E> implements ImmutableBag<E> {
     public void add(E e) {
         // is size greater than capacity increase capacity
         if (size == data.length) {
-            grow();
+            grow(size + 1);
         }
 
         data[size++] = e;
@@ -219,21 +234,13 @@ public class Bag<E> implements ImmutableBag<E> {
         data[index] = e;
     }
 
-    private void grow() {
-        int newCapacity = (data.length * 3) / 2 + 1;
-        grow(newCapacity);
-    }
-
-    @SuppressWarnings("unchecked")
     private void grow(int newCapacity) {
-        E[] oldData = data;
-        data = (E[]) new Object[newCapacity];
-        System.arraycopy(oldData, 0, data, 0, oldData.length);
+        data = Arrays.copyOf(data, Math.max(newCapacity, (data.length * 3) / 2 + 1));
     }
 
     public void ensureCapacity(int index) {
         if (index >= data.length) {
-            grow(index * 2);
+            grow(index + 1);
         }
     }
 
@@ -251,13 +258,17 @@ public class Bag<E> implements ImmutableBag<E> {
     }
 
     /**
-     * Add all items into this bag.
+     * Add all items from another bag into this bag.
      *
-     * @param added
+     * @param bag the other bag to add
      */
-    public void addAll(ImmutableBag<E> items) {
-        for (int i = 0; items.size() > i; i++) {
-            add(items.get(i));
+    public void addAll(ImmutableBag<E> bag) {
+        if (bag == this) {
+            throw new IllegalArgumentException("addAll doesn't support from itself to itself");
+        }
+
+        for (int i = 0; bag.size() > i; i++) {
+            add(bag.get(i));
         }
     }
 }

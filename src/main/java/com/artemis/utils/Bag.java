@@ -133,7 +133,7 @@ public class Bag<E> implements ImmutableBag<E> {
      */
     public boolean removeAll(ImmutableBag<E> bag) {
         if (bag == this) {
-            throw new IllegalArgumentException("addAll doesn't support from itself to itself");
+            throw new IllegalArgumentException("removeAll doesn't support from itself to itself");
         }
 
         boolean modified = false;
